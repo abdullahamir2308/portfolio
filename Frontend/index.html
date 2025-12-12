@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My AI Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-box { max-height: 400px; overflow-y: auto; }
+        .ai-message { background: #e3f2fd; }
+        .user-message { background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>👋 Hi, I'm Building an AI Portfolio!</h1>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>🤖 AI Chat Assistant</h5>
+            </div>
+            <div class="card-body">
+                <div id="chatHistory" class="chat-box mb-3 p-3 border rounded">
+                    <div class="ai-message p-2 rounded mb-2">
+                        Hello! I'm your portfolio AI. Try sending me a message!
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <input type="text" id="messageInput" 
+                           class="form-control" 
+                           placeholder="Ask me anything...">
+                    <button onclick="sendMessage()" 
+                            class="btn btn-primary">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h6>🎯 Today's Progress:</h6>
+            <ul>
+                <li>✅ Backend server with FastAPI</li>
+                <li>✅ Basic AI chat endpoint</li>
+                <li>✅ Responsive frontend with chat UI</li>
+                <li>✅ Connection between frontend and backend</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Send to backend
+            const response = await fetch('http://localhost:8000/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: message })
+            });
+            
+            const data = await response.json();
+            addMessage(data.reply, 'ai');
+        }
+        
+        function addMessage(text, sender) {
+            const chat = document.getElementById('chatHistory');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `${sender}-message p-2 rounded mb-2`;
+            msgDiv.textContent = text;
+            chat.appendChild(msgDiv);
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
