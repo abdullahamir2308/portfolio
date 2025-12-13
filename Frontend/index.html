@@ -1,80 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My AI Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI-Powered Portfolio</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .chat-box { max-height: 400px; overflow-y: auto; }
-        .ai-message { background: #e3f2fd; }
-        .user-message { background: #f5f5f5; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-robot me-2"></i>AI Portfolio
+            </a>
+            <span class="navbar-text">
+                Day 2: Real AI Integration
+            </span>
+        </div>
+    </nav>
+
     <div class="container mt-5">
-        <h1>👋 Hi, I'm Building an AI Portfolio!</h1>
-        
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5>🤖 AI Chat Assistant</h5>
-            </div>
-            <div class="card-body">
-                <div id="chatHistory" class="chat-box mb-3 p-3 border rounded">
-                    <div class="ai-message p-2 rounded mb-2">
-                        Hello! I'm your portfolio AI. Try sending me a message!
-                    </div>
+        <!-- Hero Section -->
+        <div class="row align-items-center mb-5">
+            <div class="col-md-8">
+                <h1 class="display-5 fw-bold">Hello, I'm a CS Student Building AI Solutions</h1>
+                <p class="lead">This portfolio showcases my journey in AI, web development, and automation. Chat with my AI assistant to learn more!</p>
+                <div class="badges mb-3">
+                    <span class="badge bg-primary me-2">Python</span>
+                    <span class="badge bg-success me-2">Web Development</span>
+                    <span class="badge bg-warning me-2">AI/ML</span>
+                    <span class="badge bg-info me-2">FastAPI</span>
+                    <span class="badge bg-secondary me-2">Automation</span>
                 </div>
-                
-                <div class="input-group">
-                    <input type="text" id="messageInput" 
-                           class="form-control" 
-                           placeholder="Ask me anything...">
-                    <button onclick="sendMessage()" 
-                            class="btn btn-primary">Send</button>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="ai-icon">
+                    <i class="fas fa-brain fa-5x text-primary"></i>
                 </div>
             </div>
         </div>
-        
-        <div class="mt-4">
-            <h6>🎯 Today's Progress:</h6>
-            <ul>
-                <li>✅ Backend server with FastAPI</li>
-                <li>✅ Basic AI chat endpoint</li>
-                <li>✅ Responsive frontend with chat UI</li>
-                <li>✅ Connection between frontend and backend</li>
-            </ul>
+
+        <!-- AI Chat Section -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comments me-2"></i>AI Portfolio Assistant
+                        </h5>
+                        <small>Ask about my skills, projects, or learning journey</small>
+                    </div>
+                    <div class="card-body">
+                        <!-- Chat History -->
+                        <div id="chatHistory" class="chat-history mb-3">
+                            <div class="message ai-message">
+                                <div class="message-header">
+                                    <i class="fas fa-robot me-2"></i>AI Assistant
+                                </div>
+                                <div class="message-content">
+                                    Hello! I'm your AI portfolio assistant. I can now have real conversations! 
+                                    Try asking me about:
+                                    <ul class="mt-2">
+                                        <li>What skills do you have?</li>
+                                        <li>Tell me about your projects</li>
+                                        <li>What are you learning now?</li>
+                                    </ul>
+                                </div>
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+
+                        <!-- Typing Indicator (Hidden by default) -->
+                        <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                            <div class="typing-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <div class="typing-text">AI is thinking...</div>
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="input-group">
+                            <input type="text" 
+                                   id="messageInput" 
+                                   class="form-control" 
+                                   placeholder="Ask about my skills, projects, or learning journey..."
+                                   onkeypress="handleKeyPress(event)">
+                            <button class="btn btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                        
+                        <!-- Quick Questions -->
+                        <div class="quick-questions mt-3">
+                            <small class="text-muted d-block mb-2">Try asking:</small>
+                            <button class="btn btn-sm btn-outline-secondary me-2 mb-2" onclick="setQuickQuestion('What are your technical skills?')">
+                                What are your technical skills?
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary me-2 mb-2" onclick="setQuickQuestion('Tell me about your projects')">
+                                Tell me about your projects
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary mb-2" onclick="setQuickQuestion('What AI topics are you learning?')">
+                                What AI topics are you learning?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Info Sidebar -->
+            <div class="col-lg-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="fas fa-user-graduate me-2"></i>About Me</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>🎓 Education:</strong> 3rd Semester CS Student</p>
+                        <p><strong>📍 Focus:</strong> AI + Web Development + Automation</p>
+                        <p><strong>🚀 Current Project:</strong> AI-Powered Portfolio</p>
+                    </div>
+                </div>
+
+                <div class="card shadow">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="fas fa-tasks me-2"></i>Today's Progress</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" style="width: 100%">Day 1: Complete!</div>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Project Structure Setup
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Basic Frontend-Backend
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-robot text-primary me-2"></i>
+                                <strong>Today: Real AI Integration</strong>
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-clock text-warning me-2"></i>
+                                Tomorrow: Conversation Memory
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h5 class="mb-3"><i class="fas fa-code me-2"></i>Tech Stack Used</h5>
+                <div class="d-flex flex-wrap gap-2">
+                    <div class="tech-item">FastAPI</div>
+                    <div class="tech-item">OpenAI API</div>
+                    <div class="tech-item">Bootstrap 5</div>
+                    <div class="tech-item">JavaScript</div>
+                    <div class="tech-item">Python</div>
+                    <div class="tech-item">REST APIs</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Add user message to chat
-            addMessage(message, 'user');
-            input.value = '';
-            
-            // Send to backend
-            const response = await fetch('http://localhost:8000/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: message })
-            });
-            
-            const data = await response.json();
-            addMessage(data.reply, 'ai');
-        }
-        
-        function addMessage(text, sender) {
-            const chat = document.getElementById('chatHistory');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `${sender}-message p-2 rounded mb-2`;
-            msgDiv.textContent = text;
-            chat.appendChild(msgDiv);
-            chat.scrollTop = chat.scrollHeight;
-        }
-    </script>
+    <!-- Footer -->
+    <footer class="footer mt-5 py-3 bg-dark text-white">
+        <div class="container text-center">
+            <p class="mb-0">AI Portfolio Project • Day 2 of AI Web Dev Journey</p>
+            <small>Next: Adding conversation memory and project showcase</small>
+        </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
