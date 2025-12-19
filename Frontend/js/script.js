@@ -1,35 +1,13 @@
-// async function sendMessage() {
-//     const input = document.getElementById('messageInput');
-//     const message = input.value.trim();
 
-//     if (!message) return;
-
-//     // Add user message to chat
-//     addMessage(message, 'user');
-//     input.value = '';
-
-//     // Send to backend
-//     const response = await fetch('http://localhost:8000/chat', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ content: message })
-//     });
-
-//     const data = await response.json();
-//     addMessage(data.reply, 'ai');
-// }
-
-// function addMessage(text, sender) {
-//     const chat = document.getElementById('chatHistory');
-//     const msgDiv = document.createElement('div');
-//     msgDiv.className = `${sender}-message p-2 rounded mb-2`;
-//     msgDiv.textContent = text;
-//     chat.appendChild(msgDiv);
-//     chat.scrollTop = chat.scrollHeight;
-// }
-
-// Portfolio AI Chat Application
-// Day 2: Real AI Integration
+// Add at top of PortfolioChat class
+constructor() {
+    this.conversationHistory = [];
+    this.backendUrl = 'http://localhost:8000';
+    this.sessionId = this.getOrCreateSessionId(); // NEW: Session management
+    this.initializeEventListeners();
+    this.loadPortfolioInfo();
+    this.displayMemoryStatus(); // NEW: Show memory info
+}
 
 class PortfolioChat {
     constructor() {
@@ -58,71 +36,80 @@ class PortfolioChat {
         }
     }
 
-    async sendMessage() {
-        const inputElement = document.getElementById('messageInput');
-        const message = inputElement.value.trim();
+    // Add new methods to PortfolioChat class
+    getOrCreateSessionId() {
+    // Get existing session ID or create new one
+    let sessionId = localStorage.getItem('portfolio_session_id');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('portfolio_session_id', sessionId);
+    }
+    return sessionId;
+}
+
+async displayMemoryStatus() {
+    // Fetch and display memory info
+    try {
+        const response = await fetch(`${this.backendUrl}/memory/${this.sessionId}`);
+        const data = await response.json();
         
-        if (!message) return;
-        
-        // Clear input
-        inputElement.value = '';
-        
-        // Add user message to chat
-        this.addMessage(message, 'user');
-        
-        // Show typing indicator
-        this.showTypingIndicator();
-        
-        try {
-            // Prepare conversation history for context
-            const historyForApi = this.conversationHistory.map(msg => ({
-                role: msg.sender === 'user' ? 'user' : 'assistant',
-                content: msg.content
-            }));
-            
-            // Send to backend
-            const response = await fetch(`${this.backendUrl}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    content: message,
-                    conversation_history: historyForApi
-                })
-            });
-            
-            const data = await response.json();
-            
-            // Hide typing indicator
-            this.hideTypingIndicator();
-            
-            if (data.status === 'success') {
-                // Add AI response to chat
-                this.addMessage(data.reply, 'ai');
-                
-                // Update conversation history
-                this.conversationHistory.push(
-                    { sender: 'user', content: message },
-                    { sender: 'ai', content: data.reply }
-                );
-                
-                // Keep last 10 messages in history
-                if (this.conversationHistory.length > 10) {
-                    this.conversationHistory = this.conversationHistory.slice(-10);
-                }
-            } else {
-                throw new Error(data.detail || 'Unknown error');
-            }
-            
-        } catch (error) {
-            console.error('Chat error:', error);
-            this.hideTypingIndicator();
-            this.addMessage(`Sorry, I encountered an error: ${error.message}. Please check your backend connection and API key.`, 'ai');
+        // Create memory status element if it doesn't exist
+        let statusEl = document.getElementById('memoryStatus');
+        if (!statusEl) {
+            statusEl = document.createElement('div');
+            statusEl.id = 'memoryStatus';
+            statusEl.className = 'memory-status';
+            document.querySelector('.chat-history').prepend(statusEl);
         }
         
+        if (data.total_messages > 0) {
+            statusEl.innerHTML = `
+                <small class="text-muted">
+                    <i class="fas fa-brain me-1"></i>
+                    Remembering ${data.total_messages} messages from this conversation
+                </small>
+            `;
+        }
+    } catch (error) {
+        console.log('Memory status not available yet');
     }
+}
 
+    
+ // Update sendMessage method
+async sendMessage() {
+    const inputElement = document.getElementById('messageInput');
+    const message = inputElement.value.trim();
+    
+    if (!message) return;
+    
+    inputElement.value = '';
+    this.addMessage(message, 'user');
+    this.showTypingIndicator();
+    
+    try {
+        // Send with session_id
+        const response = await fetch(`${this.backendUrl}/chat?session_id=${this.sessionId}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: message})
+        });
+        
+        const data = await response.json();
+        this.hideTypingIndicator();
+        
+        if (data.status === 'success') {
+            this.addMessage(data.reply, 'ai');
+            // Update memory status display
+            this.displayMemoryStatus();
+        }
+        
+    } catch (error) {
+        this.hideTypingIndicator();
+        this.addMessage(`Error: ${error.message}`, 'ai');
+    }
+}
+   
     addMessage(content, sender) {
         const chatHistory = document.getElementById('chatHistory');
         const messageDiv = document.createElement('div');
@@ -160,6 +147,8 @@ class PortfolioChat {
         document.getElementById('messageInput').focus();
     }
 }
+
+
 
 // Initialize chat when page loads
 document.addEventListener('DOMContentLoaded', () => {
