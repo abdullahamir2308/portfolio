@@ -234,3 +234,58 @@ CHANGES: Added styles for memory status indicator
     50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
+
+/*
+CHANGES: Add styles for memory toggle and mode indicators
+- Smart memory toggle switch
+- Mode-specific styling
+*/
+
+.memory-toggle {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border-left: 3px solid #4361ee;
+}
+
+.memory-toggle .form-check-label {
+    font-weight: 500;
+    color: #f8f9fa;
+}
+
+.memory-toggle .text-muted {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Style for system messages */
+.system-message {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border-left: 4px solid #d63384;
+}
+
+.system-message .message-header {
+    color: white;
+}
+
+/* Smart memory indicator */
+.memory-status.smart-mode {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.memory-status.standard-mode {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Toggle switch styling */
+.form-check-input:checked {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.form-check-input:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}

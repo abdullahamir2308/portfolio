@@ -1,20 +1,21 @@
 
-// Add at top of PortfolioChat class
-constructor() {
-    this.conversationHistory = [];
+/*
+CHANGES: Add smart memory mode toggle
+- Option to use semantic memory
+- Display semantic match count
+- Memory type indicator
+*/
+
+class PortfolioChat {
+    constructor() {
+        this.conversationHistory = [];
     this.backendUrl = 'http://localhost:8000';
     this.sessionId = this.getOrCreateSessionId(); // NEW: Session management
     this.initializeEventListeners();
     this.loadPortfolioInfo();
     this.displayMemoryStatus(); // NEW: Show memory info
-}
-
-class PortfolioChat {
-    constructor() {
-        this.conversationHistory = [];
-        this.backendUrl = 'http://localhost:8000'; // FastAPI backend
-        this.initializeEventListeners();
-        this.loadPortfolioInfo();
+    this.useSmartMemory = true; // NEW: Toggle for semantic memory
+    this.initializeMemoryToggle(); // NEW
     }
 
     initializeEventListeners() {
@@ -45,6 +46,34 @@ class PortfolioChat {
         localStorage.setItem('portfolio_session_id', sessionId);
     }
     return sessionId;
+}
+// Add new method
+initializeMemoryToggle() {
+    // Create memory toggle UI if not exists
+    if (!document.getElementById('memoryToggle')) {
+        const toggleHtml = `
+            <div class="memory-toggle">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="smartMemoryToggle" checked>
+                    <label class="form-check-label" for="smartMemoryToggle">
+                        <i class="fas fa-brain me-1"></i>Smart Memory
+                    </label>
+                    <small class="text-muted ms-2">(Uses embeddings for better recall)</small>
+                </div>
+            </div>
+        `;
+        
+        const chatHeader = document.querySelector('.card-header');
+        if (chatHeader) {
+            chatHeader.insertAdjacentHTML('beforeend', toggleHtml);
+            
+            // Add event listener
+            document.getElementById('smartMemoryToggle').addEventListener('change', (e) => {
+                this.useSmartMemory = e.target.checked;
+                this.showMemoryModeNotification();
+            });
+        }
+    }
 }
 
 async displayMemoryStatus() {
@@ -88,20 +117,26 @@ async sendMessage() {
     this.showTypingIndicator();
     
     try {
-        // Send with session_id
-        const response = await fetch(`${this.backendUrl}/chat?session_id=${this.sessionId}`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: message})
-        });
+        // Choose endpoint based on memory mode
+        const endpoint = this.useSmartMemory ? '/chat_smart' : '/chat';
+        
+        const response = await fetch(
+            `${this.backendUrl}${endpoint}?session_id=${this.sessionId}`,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content: message})
+            }
+        );
         
         const data = await response.json();
         this.hideTypingIndicator();
         
         if (data.status === 'success') {
             this.addMessage(data.reply, 'ai');
-            // Update memory status display
-            this.displayMemoryStatus();
+            
+            // Enhanced status display
+            this.displayEnhancedMemoryStatus(data);
         }
         
     } catch (error) {
@@ -109,6 +144,46 @@ async sendMessage() {
         this.addMessage(`Error: ${error.message}`, 'ai');
     }
 }
+
+// New method for enhanced status
+displayEnhancedMemoryStatus(data) {
+    let statusEl = document.getElementById('memoryStatus');
+    if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'memoryStatus';
+        statusEl.className = 'memory-status';
+        document.querySelector('.chat-history').prepend(statusEl);
+    }
+    
+    let statusText = '';
+    if (this.useSmartMemory && data.semantic_matches > 0) {
+        statusText = `
+            <i class="fas fa-brain me-1"></i>
+            Smart mode: Found ${data.semantic_matches} related memories +
+            ${data.recent_memory_count || 0} recent messages
+        `;
+    } else {
+        statusText = `
+            <i class="fas fa-history me-1"></i>
+            Standard mode: ${data.recent_memory_count || 0} messages in memory
+        `;
+    }
+    
+    statusEl.innerHTML = `<small class="text-muted">${statusText}</small>`;
+}
+
+// New method for mode notification
+showMemoryModeNotification() {
+    const mode = this.useSmartMemory ? 'Smart' : 'Standard';
+    const icon = this.useSmartMemory ? 'fa-brain' : 'fa-history';
+    
+    this.addMessage(
+        `Switched to <strong>${mode} Memory Mode</strong>. ` +
+        `${this.useSmartMemory ? 'Now using semantic search for better context.' : 'Using recent conversation only.'}`,
+        
+    );
+}
+
    
     addMessage(content, sender) {
         const chatHistory = document.getElementById('chatHistory');
@@ -149,7 +224,6 @@ async sendMessage() {
 }
 
 
-
 // Initialize chat when page loads
 document.addEventListener('DOMContentLoaded', () => {
     window.portfolioChat = new PortfolioChat();
@@ -171,5 +245,14 @@ function handleKeyPress(event) {
 function setQuickQuestion(question) {
     if (window.portfolioChat) {
         window.portfolioChat.setQuickQuestion(question);
+    }
+}
+function toggleMemoryMode() {
+    if (window.portfolioChat) {
+        const toggle = document.getElementById('smartMemoryToggle');
+        if (toggle) {
+            toggle.checked = !toggle.checked;
+            toggle.dispatchEvent(new Event('change'));
+        }
     }
 }

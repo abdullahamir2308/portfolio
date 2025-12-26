@@ -34,6 +34,91 @@ from datetime import datetime
 import json
 from typing import Dict, List
 import uuid
+"""
+CHANGES: Add embedding-based memory recall
+- Store conversation snippets with embeddings
+- Semantic search for relevant memories
+- Two memory systems: recent + semantic
+"""
+
+import numpy as np
+
+
+# Add after existing imports
+class EmbeddingMemory:
+    """Semantic memory using embeddings"""
+
+    def __init__(self, storage_file: str = "semantic_memory.json"):
+        self.storage_file = storage_file
+        self.client = OpenAI()
+        self.memories = self.load_memories()
+    
+    def load_memories(self):
+        """Load semantic memories from file"""
+        try:
+            with open(self.storage_file, 'r') as f:
+                return json.load(f)
+        except:
+            return {"embeddings": [], "texts": [], "metadata": []}
+    
+    def save_memories(self):
+        """Save memories to file"""
+        with open(self.storage_file, 'w') as f:
+            json.dump(self.memories, f, indent=2)
+    
+    def create_embedding(self, text: str):
+        """Convert text to embedding vector"""
+        response = self.client.embeddings.create(
+            model="text-embedding-3-small",
+            input=text
+        )
+        return response.data[0].embedding
+    
+    def add_memory(self, text: str, metadata: dict = None):
+        """Add text with embedding to memory"""
+        embedding = self.create_embedding(text)
+        
+        self.memories["embeddings"].append(embedding)
+        self.memories["texts"].append(text)
+        self.memories["metadata"].append(metadata or {})
+        
+        # Keep only last 50 memories
+        if len(self.memories["texts"]) > 50:
+            for key in ["embeddings", "texts", "metadata"]:
+                self.memories[key] = self.memories[key][-50:]
+        
+        self.save_memories()
+    
+    def find_similar(self, query: str, top_k: int = 3):
+        """Find most similar memories to query"""
+        if not self.memories["embeddings"]:
+            return []
+        
+        query_embedding = self.create_embedding(query)
+        similarities = []
+        
+        for i, emb in enumerate(self.memories["embeddings"]):
+            # Simple cosine similarity
+            sim = np.dot(query_embedding, emb) / (
+                np.linalg.norm(query_embedding) * np.linalg.norm(emb)
+            )
+            similarities.append((sim, i))
+        
+        # Sort by similarity (highest first)
+        similarities.sort(reverse=True, key=lambda x: x[0])
+        
+        # Return top matches
+        results = []
+        for sim, idx in similarities[:top_k]:
+            if sim > 0.7:  # Similarity threshold
+                results.append({
+                    "text": self.memories["texts"][idx],
+                    "similarity": float(sim),
+                    "metadata": self.memories["metadata"][idx]
+                })
+        
+        return results
+
 
 class ConversationMemory:
     """Simple file-based conversation memory"""
@@ -79,8 +164,9 @@ load_dotenv()
 
 app = FastAPI()
 
-# Initialize memory system
+# Initialize both memory systems
 memory = ConversationMemory()
+embedding_memory = EmbeddingMemory()
 
 # CORS middleware for frontend-backend communication
 app.add_middleware(
@@ -152,7 +238,7 @@ async def chat_with_memory(message: Message, session_id: str = "default"):
         
         # Call OpenAI
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=messages,
             max_tokens=200,
             temperature=0.7
@@ -181,4 +267,86 @@ def get_memory(session_id: str):
         "session_id": session_id,
         "messages": memory.get_session_history(session_id),
         "total_messages": len(memory.get_session_history(session_id))
+    }
+
+# Add this new endpoint
+@app.post("/chat_smart")
+async def chat_smart(message: Message, session_id: str = "default"):
+    """
+    Smart chat with both recent and semantic memory
+    - Recent: Last 6 messages
+    - Semantic: Related past conversations
+    """
+    try:
+        # Get recent conversation history
+        recent_history = memory.get_session_history(session_id)
+        
+        # Get semantically related memories
+        semantic_memories = embedding_memory.find_similar(message.content)
+        
+        # Build enhanced system prompt with memories
+        system_prompt = f"""
+        You are an AI portfolio assistant. Context: {portfolio_context}
+        
+        Recent conversation:
+        {recent_history[-3:] if recent_history else "No recent conversation"}
+        
+        Relevant past memories:
+        {[m['text'][:100] + '...' for m in semantic_memories[:2]] if semantic_memories else "No relevant memories"}
+        
+        Instructions:
+        1. Answer based on current query and available memories
+        2. If memories are relevant, reference them naturally
+        3. Keep responses conversational and helpful
+        """
+        
+        # Prepare messages
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Add recent conversation
+        if recent_history:
+            messages.extend(recent_history[-4:])
+        
+        # Add current message
+        messages.append({"role": "user", "content": message.content})
+        
+        # Get AI response
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            max_tokens=250,
+            temperature=0.8
+        )
+        
+        ai_reply = response.choices[0].message.content
+        
+        # Store in both memory systems
+        memory.add_message(session_id, "user", message.content)
+        memory.add_message(session_id, "assistant", ai_reply)
+        
+        # Store important exchanges in semantic memory
+        if len(message.content) > 20:  # Only store substantive messages
+            embedding_memory.add_memory(
+                text=f"User: {message.content}\nAssistant: {ai_reply}",
+                metadata={"session": session_id, "timestamp": datetime.now().isoformat()}
+            )
+        
+        return {
+            "reply": ai_reply,
+            "session_id": session_id,
+            "recent_memory_count": len(memory.get_session_history(session_id)),
+            "semantic_matches": len(semantic_memories),
+            "status": "success"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add endpoint to view semantic memories
+@app.get("/semantic_memories")
+def get_semantic_memories():
+    """Get all semantic memories"""
+    return {
+        "total_memories": len(embedding_memory.memories["texts"]),
+        "sample_memories": embedding_memory.memories["texts"][-5:] if embedding_memory.memories["texts"] else []
     }
