@@ -34,6 +34,9 @@ from datetime import datetime
 import json
 from typing import Dict, List
 import uuid
+from agent_system import PortfolioAgent
+import numpy as np
+
 """
 CHANGES: Add embedding-based memory recall
 - Store conversation snippets with embeddings
@@ -179,6 +182,9 @@ app.add_middleware(
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 portfolio_context = os.getenv("PORTFOLIO_CONTEXT", "")
+
+# Initialize agent (add after existing client initialization)
+agent = PortfolioAgent(client)
 
 class Message(BaseModel):
     content: str
@@ -349,4 +355,36 @@ def get_semantic_memories():
     return {
         "total_memories": len(embedding_memory.memories["texts"]),
         "sample_memories": embedding_memory.memories["texts"][-5:] if embedding_memory.memories["texts"] else []
+    }
+
+
+# Add new endpoints
+@app.post("/agent/task")
+async def execute_agent_task(task_request: dict):
+    """Execute a task using the AI agent"""
+    task = task_request.get("task", "")
+    
+    if not task:
+        raise HTTPException(status_code=400, detail="No task provided")
+    
+    result = agent.execute_plan(task)
+    return result
+
+@app.get("/agent/status")
+def get_agent_status():
+    """Get current agent status and capabilities"""
+    return agent.get_agent_status()
+
+@app.get("/agent/tools")
+def get_available_tools():
+    """List all available agent tools"""
+    return {
+        "tools": [
+            {
+                "name": name,
+                "description": tool.description,
+                "example": f"Try: 'Use {name} to...'"
+            }
+            for name, tool in agent.tools.items()
+        ]
     }

@@ -289,3 +289,69 @@ CHANGES: Add styles for memory toggle and mode indicators
     border-color: #4361ee;
     box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
 }
+
+/*
+AI AGENT STYLES - Day 5
+*/
+
+/* Agent Card */
+.border-primary {
+    border: 2px solid #4361ee !important;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%) !important;
+}
+
+/* Agent Status */
+.agent-status {
+    padding: 15px;
+    background: rgba(67, 97, 238, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid #4361ee;
+}
+
+.progress-bar-animated {
+    animation: progress-animation 1s linear infinite;
+}
+
+@keyframes progress-animation {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 0; }
+}
+
+/* Tool Cards */
+.tool-card .card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.tool-card .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-color: #4361ee;
+}
+
+/* Results Display */
+.agent-results .list-group-item {
+    border-left: 3px solid #28a745;
+    margin-bottom: 5px;
+}
+
+.agent-results .list-group-item:nth-child(odd) {
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
+/* Agent Badges */
+.badge.bg-thinking { background-color: #17a2b8 !important; }
+.badge.bg-acting { background-color: #ffc107 !important; color: #212529 !important; }
+.badge.bg-completed { background-color: #28a745 !important; }
+.badge.bg-error { background-color: #dc3545 !important; }
+.badge.bg-idle { background-color: #6c757d !important; }
+
+/* Quick Task Buttons */
+.btn-outline-secondary:hover {
+    background-color: #4361ee;
+    color: white;
+    border-color: #4361ee;
+}
