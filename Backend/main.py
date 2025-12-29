@@ -36,6 +36,8 @@ from typing import Dict, List
 import uuid
 from agent_system import PortfolioAgent
 import numpy as np
+from n8n_integration import router as n8n_router
+
 
 """
 CHANGES: Add embedding-based memory recall
@@ -166,6 +168,8 @@ class ConversationMemory:
 load_dotenv()
 
 app = FastAPI()
+
+app.include_router(n8n_router)
 
 # Initialize both memory systems
 memory = ConversationMemory()
@@ -388,3 +392,19 @@ def get_available_tools():
             for name, tool in agent.tools.items()
         ]
     }
+
+# Add health check endpoint for n8n
+@app.get("/health")
+def health_check():
+    """Health check for n8n monitoring"""
+    return {
+        "status": "healthy",
+        "service": "AI Portfolio Backend",
+        "timestamp": datetime.now().isoformat(),
+        "endpoints": {
+            "agent": "/agent/task",
+            "chat": "/chat",
+            "n8n": "/n8n",
+            "health": "/health"
+        }
+    }        

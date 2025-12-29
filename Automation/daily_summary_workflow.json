@@ -1,0 +1,122 @@
+{
+  "name": "Daily AI Portfolio Summary",
+  "nodes": [
+    {
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [250, 300],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "minutesInterval": 24
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "HTTP Request to Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [450, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/n8n/webhook/daily-summary",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "Generate daily summary of learning progress and portfolio activity"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "AI Agent Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [650, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/agent/task",
+        "authentication": "none",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{$json[\"task\"]}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Format Result",
+      "type": "n8n-nodes-base.function",
+      "position": [850, 300],
+      "parameters": {
+        "jsCode": "// Format AI agent response\nconst result = $input.first().json;\n\n// Create readable summary\nconst summary = {\n  summary: `📊 Daily Portfolio Summary\\n` +\n           `Task: ${result.task}\\n` +\n           `Status: ${result.status}\\n` +\n           `Steps: ${result.steps_executed}\\n` +\n           `Time: ${new Date().toLocaleString()}`,\n  raw: result\n};\n\nreturn [summary];"
+      }
+    },
+    {
+      "name": "Save to File (Demo)",
+      "type": "n8n-nodes-base.writeFile",
+      "position": [1050, 300],
+      "parameters": {
+        "operation": "write",
+        "filePath": "/tmp/portfolio_summary_{{Date.now()}}.json",
+        "writeData": "={{JSON.stringify($json, null, 2)}}"
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request to Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request to Backend": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Task": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Save to File (Demo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

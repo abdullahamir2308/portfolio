@@ -1,0 +1,44 @@
+🚀 HOW TO RUN YOUR CODE:
+📋 STEP-BY-STEP:
+1. Start Backend Server:
+bash
+# Open Terminal 1
+cd portfolio/backend
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+Should see: Uvicorn running on http://0.0.0.0:8000
+
+2. Start Frontend Server:
+bash
+# Open Terminal 2
+cd portfolio/frontend
+
+# Option A: Python HTTP server
+python -m http.server 8080
+
+# Option B: If you have Node.js
+npx serve .
+
+# Option C: Just open index.html directly in browser
+# (File → Open → index.html)
+3. Test in Browser:
+Open browser
+
+Go to: http://localhost:8080
+
+Should see your portfolio with chat
+
+Backend API: http://localhost:8000
+
+✅ QUICK CHECK:
+Test Backend:
+bash
+# In Terminal, test API:
+curl http://localhost:8000/
+# Should return: {"message":"AI Portfolio Backend Running!"}
+Test Frontend:
+Open DevTools (F12)
+
+Check Console tab for errors
+
+Check Network tab for API calls
