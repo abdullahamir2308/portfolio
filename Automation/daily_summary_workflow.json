@@ -63,13 +63,11 @@
       }
     },
     {
-      "name": "Save to File (Demo)",
-      "type": "n8n-nodes-base.writeFile",
+      "name": "Log Result",
+      "type": "n8n-nodes-base.function",
       "position": [1050, 300],
       "parameters": {
-        "operation": "write",
-        "filePath": "/tmp/portfolio_summary_{{Date.now()}}.json",
-        "writeData": "={{JSON.stringify($json, null, 2)}}"
+        "jsCode": "// Log to n8n console\nconsole.log('✅ Daily Summary Generated:', JSON.stringify($input.all(), null, 2));\n\n// Return data for debugging\nreturn $input.all();"
       }
     }
   ],
@@ -111,7 +109,7 @@
       "main": [
         [
           {
-            "node": "Save to File (Demo)",
+            "node": "Log Result",
             "type": "main",
             "index": 0
           }
