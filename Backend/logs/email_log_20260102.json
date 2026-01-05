@@ -1,0 +1,48 @@
+[
+  {
+    "type": "portfolio_summary",
+    "data": {
+      "chat_count": 1,
+      "agent_tasks": 1,
+      "memory_entries": 1,
+      "ai_summary": "This is a test email to verify your email service is working correctly.",
+      "recent_activities": [
+        "AI Agent executed code analysis task",
+        "n8n workflow triggered daily summary",
+        "Semantic memory expanded with new embeddings"
+      ],
+      "test": true
+    },
+    "result": {
+      "status": "sent",
+      "service": "sendgrid",
+      "status_code": 202,
+      "message_id": "qUHU5-ZvSNObmOo6AwLoIw",
+      "timestamp": "2026-01-02T20:11:26.040258"
+    },
+    "timestamp": "2026-01-02T20:11:26.040322"
+  },
+  {
+    "type": "portfolio_summary",
+    "data": {
+      "chat_count": 1,
+      "agent_tasks": 1,
+      "memory_entries": 1,
+      "ai_summary": "This is a test email to verify your email service is working correctly.",
+      "recent_activities": [
+        "AI Agent executed code analysis task",
+        "n8n workflow triggered daily summary",
+        "Semantic memory expanded with new embeddings"
+      ],
+      "test": true
+    },
+    "result": {
+      "status": "sent",
+      "service": "sendgrid",
+      "status_code": 202,
+      "message_id": "TtVytDYdQa-17kwjfWBnKA",
+      "timestamp": "2026-01-02T20:11:55.978404"
+    },
+    "timestamp": "2026-01-02T20:11:55.978466"
+  }
+]
