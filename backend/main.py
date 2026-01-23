@@ -37,6 +37,9 @@ import uuid
 from agent_system import PortfolioAgent
 import numpy as np
 from n8n_integration import router as n8n_router
+from email_service import email_service
+import numpy as np
+
 
 
 """
@@ -46,7 +49,6 @@ CHANGES: Add embedding-based memory recall
 - Two memory systems: recent + semantic
 """
 
-import numpy as np
 
 
 # Add after existing imports
@@ -408,3 +410,54 @@ def health_check():
             "health": "/health"
         }
     }        
+
+
+# Add new endpoints
+@app.post("/email/summary")
+async def send_summary_email(email_request: dict = None):
+    """Send portfolio summary email"""
+    
+    # Get mock data (in production, fetch from database)
+    summary_data = {
+        "chat_count": len(conversation_memory.memory.get("default", [])),
+        "agent_tasks": len(agent.memory),
+        "memory_entries": len(embedding_memory.memories.get("texts", [])),
+        "ai_summary": "Your AI portfolio is actively learning and improving. Recent interactions show growing engagement with AI agent features.",
+        "recent_activities": [
+            "AI Agent executed code analysis task",
+            "n8n workflow triggered daily summary",
+            "Semantic memory expanded with new embeddings"
+        ]
+    }
+    
+    # Merge with request data if provided
+    if email_request:
+        summary_data.update(email_request)
+    
+    result = email_service.send_portfolio_summary(summary_data)
+    return result
+
+@app.post("/email/agent-report")
+async def send_agent_report(agent_results: dict):
+    """Send AI agent execution report"""
+    result = email_service.send_daily_report(agent_results)
+    return result
+
+@app.get("/email/logs")
+async def get_email_logs(days: int = 7):
+    """Get recent email logs"""
+    logs = []
+    for i in range(days):
+        date_str = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
+        log_file = f"logs/email_log_{date_str}.json"
+        
+        if os.path.exists(log_file):
+            with open(log_file, 'r') as f:
+                day_logs = json.load(f)
+                logs.extend(day_logs)
+    
+    return {
+        "total_emails": len(logs),
+        "emails": logs[-20:]  # Last 20 emails
+    }
+
