@@ -432,3 +432,42 @@ AI AGENT STYLES - Day 5
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+
+/* GitHub Dashboard */
+.bg-gradient-dark {
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%) !important;
+}
+
+.language-chart .progress {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.language-chart .progress-bar {
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.activity-timeline {
+    padding: 10px;
+}
+
+.activity-day {
+    padding: 10px;
+    border-left: 3px solid #4361ee;
+    background: rgba(67, 97, 238, 0.05);
+    border-radius: 0 8px 8px 0;
+}
+
+.activity-day:hover {
+    background: rgba(67, 97, 238, 0.1);
+    transform: translateX(5px);
+    transition: all 0.3s ease;
+}
+
+/* Repository cards */
+.card .btn-outline-primary:hover {
+    background-color: #4361ee;
+    color: white;
+}

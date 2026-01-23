@@ -39,6 +39,8 @@ import numpy as np
 from n8n_integration import router as n8n_router
 from email_service import email_service
 import numpy as np
+from github_service import github_service
+
 
 
 
@@ -412,7 +414,7 @@ def health_check():
     }        
 
 
-# Add new endpoints
+# email dashboard endpoints
 @app.post("/email/summary")
 async def send_summary_email(email_request: dict = None):
     """Send portfolio summary email"""
@@ -461,3 +463,75 @@ async def get_email_logs(days: int = 7):
         "emails": logs[-20:]  # Last 20 emails
     }
 
+
+# github endpoints
+@app.get("/github/profile")
+async def get_github_profile():
+    """Get GitHub user profile"""
+    try:
+        profile = github_service.get_user_profile()
+        return profile
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/github/repos")
+async def get_github_repos():
+    """Get GitHub repositories"""
+    try:
+        repos = github_service.get_repositories()
+        return {"repositories": repos}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/github/activity")
+async def get_github_activity(days: int = 30):
+    """Get GitHub activity"""
+    try:
+        activity = github_service.get_user_activity(days)
+        return {"activity": activity}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/github/contributions")
+async def get_contributions():
+    """Get contributions summary"""
+    try:
+        contributions = github_service.get_contributions_summary()
+        return contributions
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/github/languages")
+async def get_language_stats():
+    """Get programming language statistics"""
+    try:
+        languages = github_service.get_language_stats()
+        return languages
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/github/repo/{repo_name}")
+async def get_repository_details(repo_name: str):
+    """Get detailed repository information"""
+    try:
+        repo_details = github_service.get_repository_details(repo_name)
+        return repo_details
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add health check for GitHub
+@app.get("/github/health")
+async def github_health():
+    """Check GitHub API connectivity"""
+    try:
+        profile = github_service.get_user_profile()
+        return {
+            "status": "connected",
+            "username": profile.get("login"),
+            "rate_limit_remaining": profile.get("rate_limit_remaining", "unknown")
+        }
+    except Exception as e:
+        return {
+            "status": "disconnected",
+            "error": str(e)
+        }
