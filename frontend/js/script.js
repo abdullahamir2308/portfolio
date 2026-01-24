@@ -26,7 +26,14 @@ class PortfolioChat {
             }
         });
     }
-
+    setRecruiterMode(isRecruiterMode) {
+    this.recruiterMode = isRecruiterMode;
+    if (isRecruiterMode) {
+        // Hide personal tools in agent UI
+        const personalTools = document.querySelectorAll('.tool-card[data-tool-type="personal"]');
+        personalTools.forEach(tool => tool.style.display = 'none');
+    }
+}
     async loadPortfolioInfo() {
         try {
             const response = await fetch(`${this.backendUrl}/portfolio`);

@@ -30,7 +30,7 @@ import os
 from openai import OpenAI
 from dotenv import load_dotenv
 from typing import List
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from typing import Dict, List
 import uuid
@@ -189,7 +189,8 @@ app.add_middleware(
 )
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-portfolio_context = os.getenv("PORTFOLIO_CONTEXT", "")
+ai_context = os.getenv("AI_CONTEXT")
+# portfolio_context = os.getenv("PORTFOLIO_CONTEXT", "")
 
 # Initialize agent (add after existing client initialization)
 agent = PortfolioAgent(client)
@@ -238,7 +239,7 @@ async def chat_with_memory(message: Message, session_id: str = "default"):
         
         # Prepare messages for OpenAI with system prompt and history
         system_prompt = f"""
-        You are an AI portfolio assistant. Context: {portfolio_context}
+        You are an AI portfolio assistant. Context: {ai_context }
         You're having a conversation with a visitor.
         """
         
@@ -300,7 +301,7 @@ async def chat_smart(message: Message, session_id: str = "default"):
         
         # Build enhanced system prompt with memories
         system_prompt = f"""
-        You are an AI portfolio assistant. Context: {portfolio_context}
+        You are an AI portfolio assistant. Context: {ai_context }
         
         Recent conversation:
         {recent_history[-3:] if recent_history else "No recent conversation"}
@@ -421,7 +422,7 @@ async def send_summary_email(email_request: dict = None):
     
     # Get mock data (in production, fetch from database)
     summary_data = {
-        "chat_count": len(conversation_memory.memory.get("default", [])),
+        "chat_count": len(ConversationMemory.memory.get("default", [])),
         "agent_tasks": len(agent.memory),
         "memory_entries": len(embedding_memory.memories.get("texts", [])),
         "ai_summary": "Your AI portfolio is actively learning and improving. Recent interactions show growing engagement with AI agent features.",
