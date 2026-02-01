@@ -14,6 +14,14 @@ class EmailDashboard {
         // Add email dashboard section
         if (!document.getElementById('emailDashboard')) {
             const emailHtml = `
+            <div id="emailLoading" class="dashboard-loading">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading email data...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading email dashboard...</p>
+                </div>
+            </div>
                 <div class="row mt-5" id="emailDashboard">
                     <div class="col-12">
                         <div class="card shadow-lg border-warning">
@@ -150,8 +158,11 @@ class EmailDashboard {
             }
             
             // Load data
-            this.loadEmailLogs();
-            this.updateStats();
+            // this.loadEmailLogs();
+            // this.updateStats();
+
+            // Set up lazy loading
+            this.setupLazyLoading();
             
             // Set up preview buttons
             this.setupPreviewButtons();
@@ -226,6 +237,11 @@ class EmailDashboard {
                 </div>
             </div>
         `).join('');
+
+        const dashboard = document.getElementById('emailDashboard'); 
+        if (dashboard) {
+            dashboard.classList.add('loaded');
+        }
     }
     
     async sendPortfolioSummary() {
@@ -278,6 +294,35 @@ class EmailDashboard {
         } catch (error) {
             this.showNotification('error', 'Failed to Send', error.message);
         }
+    }
+    
+    setupLazyLoading() {
+        const dashboardElement = document.getElementById('emailDashboard');
+        if (!dashboardElement) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Dashboard is visible, load data
+                    this.loadEmailLogs();
+                    this.updateStats();
+                    
+                    // Hide loading placeholder
+                    const loadingElement = document.getElementById('emailLoading');
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                    
+                    // Stop observing
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+        
+        observer.observe(dashboardElement);
     }
     
     async testConnection() {

@@ -16,6 +16,14 @@ class GitHubDashboard {
         // Add GitHub dashboard section
         if (!document.getElementById('githubDashboard')) {
             const githubHtml = `
+            <div id="githubLoading" class="dashboard-loading">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading GitHub data...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading GitHub dashboard...</p>
+                </div>
+            </div>
                 <div class="row mt-5" id="githubDashboard">
                     <div class="col-12">
                         <div class="card shadow-lg border-dark">
@@ -154,8 +162,9 @@ class GitHubDashboard {
             }
             
             // Load GitHub data
-            this.checkConnection();
-            this.loadGitHubData();
+            // this.checkConnection();
+            // this.loadGitHubData();
+            this.setupLazyLoading();
         }
     }
     
@@ -217,6 +226,11 @@ class GitHubDashboard {
             
             // Show stats section
             document.getElementById('githubStats').style.display = 'flex';
+
+            const dashboard = document.getElementById('githubDashboard'); 
+            if (dashboard) {
+                dashboard.classList.add('loaded');
+            }
             
         } catch (error) {
             console.error('Failed to load GitHub data:', error);
@@ -477,6 +491,38 @@ class GitHubDashboard {
         } catch (error) {
             this.showNotification('error', 'Report Generation Failed', error.message);
         }
+    }
+    
+    setupLazyLoading() {
+        const dashboardElement = document.getElementById('githubDashboard');
+        if (!dashboardElement) return;
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Dashboard is visible, load data
+                    this.checkConnection();
+                    this.loadGitHubData();
+                    
+                    // Start polling
+                    setInterval(() => this.loadGitHubData(), 30000);
+                    
+                    // Hide loading placeholder
+                    const loadingElement = document.getElementById('githubLoading');
+                    if (loadingElement) {
+                        loadingElement.style.display = 'none';
+                    }
+                    
+                    // Stop observing
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '50px'
+        });
+        
+        observer.observe(dashboardElement);
     }
     
     showNotification(type, title, message) {
