@@ -38,7 +38,6 @@ from agent_system import PortfolioAgent
 import numpy as np
 from n8n_integration import router as n8n_router
 from email_service import email_service
-import numpy as np
 from github_service import github_service
 
 
@@ -239,14 +238,15 @@ async def chat_with_memory(message: Message, session_id: str = "default"):
         
         # Prepare messages for OpenAI with system prompt and history
         system_prompt = f"""
-        You are an AI portfolio assistant. Context: {ai_context }
+        You are an AI portfolio assistant. Context: {ai_context}
         You're having a conversation with a visitor.
         """
         
         messages = [{"role": "system", "content": system_prompt}]
         
         # Add conversation history (last 6 exchanges)
-        messages.extend(history[-6:]) if history else None
+        if history:
+            messages.extend(history[-6:])
         
         # Add current message
         messages.append({"role": "user", "content": message.content})
@@ -415,15 +415,67 @@ def health_check():
     }        
 
 
-# email dashboard endpoints
+# # email dashboard endpoints
+# @app.post("/email/summary")
+# async def send_summary_email(email_request: dict = None):
+#     """Send portfolio summary email"""
+    
+#     # Get mock data (in production, fetch from database)
+#     summary_data = {
+#         "chat_count": len(ConversationMemory.memory.get("default", [])),
+#         "agent_tasks": len(agent.memory),
+#         "memory_entries": len(embedding_memory.memories.get("texts", [])),
+#         "ai_summary": "Your AI portfolio is actively learning and improving. Recent interactions show growing engagement with AI agent features.",
+#         "recent_activities": [
+#             "AI Agent executed code analysis task",
+#             "n8n workflow triggered daily summary",
+#             "Semantic memory expanded with new embeddings"
+#         ]
+#     }
+    
+#     # Merge with request data if provided
+#     if email_request:
+#         summary_data.update(email_request)
+    
+#     result = email_service.send_portfolio_summary(summary_data)
+#     return result
+
+# @app.post("/email/agent-report")
+# async def send_agent_report(agent_results: dict):
+#     """Send AI agent execution report"""
+#     result = email_service.send_daily_report(agent_results)
+#     return result
+
+# @app.get("/email/logs")
+# async def get_email_logs(days: int = 7):
+#     """Get recent email logs"""
+#     logs = []
+#     for i in range(days):
+#         date_str = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
+#         log_file = f"logs/email_log_{date_str}.json"
+        
+#         if os.path.exists(log_file):
+#             with open(log_file, 'r') as f:
+#                 day_logs = json.load(f)
+#                 logs.extend(day_logs)
+    
+#     return {
+#         "total_emails": len(logs),
+#         "emails": logs[-20:]  # Last 20 emails
+#     }
+
+# Add to imports
+from email_service import email_service
+
+# Add new endpoints
 @app.post("/email/summary")
 async def send_summary_email(email_request: dict = None):
     """Send portfolio summary email"""
     
     # Get mock data (in production, fetch from database)
     summary_data = {
-        "chat_count": len(ConversationMemory.memory.get("default", [])),
-        "agent_tasks": len(agent.memory),
+        "chat_count": len(memory.memories.get("default", [])),
+        "agent_tasks": len(agent.memory) if hasattr(agent, 'memory') else 0,
         "memory_entries": len(embedding_memory.memories.get("texts", [])),
         "ai_summary": "Your AI portfolio is actively learning and improving. Recent interactions show growing engagement with AI agent features.",
         "recent_activities": [
@@ -536,3 +588,23 @@ async def github_health():
             "status": "disconnected",
             "error": str(e)
         }
+    
+
+@app.post("/analytics")
+async def track_analytics(event: dict):
+    """Track analytics events (simple logging for now)"""
+    # In production, save to database
+    # For now, just log to file
+    import json
+    from datetime import datetime
+    
+    log_entry = {
+        **event,
+        "received_at": datetime.now().isoformat()
+    }
+    
+    # Append to log file
+    with open("analytics.log", "a") as f:
+        f.write(json.dumps(log_entry) + "\n")
+    
+    return {"status": "logged", "event_id": datetime.now().timestamp()}

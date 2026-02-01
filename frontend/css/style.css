@@ -744,3 +744,44 @@ img.loaded {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* CASE STUDIES - Day 11 */
+.case-study-card {
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.case-study-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    border-color: #4361ee;
+}
+
+.tech-tags .badge {
+    font-size: 0.75rem;
+    font-weight: normal;
+}
+
+/* Documentation styles */
+.doc-nav .nav-link.active {
+    background-color: #4361ee;
+    color: white !important;
+    border-radius: 5px;
+}
+
+pre {
+    background: #1a1a1a;
+    color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.9rem;
+}
+
+code {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #d63384;
+}
