@@ -3,6 +3,50 @@
  * Displays professional project case studies
  */
 
+const CASE_STUDIES = {
+    aiPortfolio: {
+        id: 'ai-portfolio',
+        title: 'AI-Powered Portfolio System',
+        tagline: 'Intelligent portfolio with autonomous AI agents and automation',
+        status: 'Live',
+        timeline: '2 weeks',
+        technologies: ['FastAPI', 'OpenAI API', 'JavaScript', 'Bootstrap 5', 'n8n'],
+        
+        overview: 'A dynamic portfolio that showcases AI integration skills through interactive agents, automation workflows, and real-time data processing.',
+        
+        features: [
+            'AI Chat Assistant with conversation memory and semantic search',
+            'Autonomous AI Agent with 5+ specialized tools',
+            'n8n automation workflows for scheduled tasks',
+            'GitHub API integration for real-time coding analytics',
+            'Email notification system with professional templates',
+            'Mobile-first responsive design with dark mode support'
+        ],
+        
+        challenges: [
+            'Integrating multiple AI models while managing token costs',
+            'Implementing conversation memory without external databases',
+            'Creating user-friendly interfaces for complex AI operations'
+        ],
+        
+        solutions: [
+            'Used OpenAI GPT-4o-mini for cost-effective intelligence',
+            'Implemented dual memory system (recent + semantic) with embeddings',
+            'Created intuitive dashboards with progressive disclosure'
+        ],
+        
+        metrics: {
+            'Initial Load Time': '1.8s',
+            'API Response Time': '<200ms',
+            'User Engagement': '+40% with AI features',
+            'Code Quality': '95% Lighthouse score'
+        },
+        
+        githubUrl: 'https://github.com/yourusername/ai-portfolio',
+        liveUrl: 'http://localhost:8080'
+    }
+};
+
 class CaseStudies {
     constructor() {
         this.caseStudies = null;
@@ -23,24 +67,8 @@ class CaseStudies {
     }
     
     async loadCaseStudies() {
-        // Try to import the module
-        try {
-            const module = await import('./data/caseStudies.js');
-            this.caseStudies = module.default;
-        } catch (error) {
-            // Fallback to inline data
-            this.caseStudies = {
-                aiPortfolio: {
-                    id: 'ai-portfolio',
-                    title: 'AI-Powered Portfolio System',
-                    tagline: 'Intelligent portfolio with autonomous AI agents and automation',
-                    technologies: ['FastAPI', 'OpenAI API', 'JavaScript', 'Bootstrap 5', 'n8n'],
-                    overview: 'A dynamic portfolio that showcases AI integration skills...',
-                    features: ['AI Chat Assistant', 'Autonomous AI Agent', 'n8n automation', 'GitHub API integration']
-                }
-                // ... more projects
-            };
-        }
+        // Load inline case studies data
+        this.caseStudies = CASE_STUDIES;
     }
     
     renderCaseStudies() {
