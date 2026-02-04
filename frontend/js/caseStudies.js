@@ -42,10 +42,69 @@ const CASE_STUDIES = {
             'Code Quality': '95% Lighthouse score'
         },
         
-        githubUrl: 'https://github.com/yourusername/ai-portfolio',
+        githubUrl: 'https://github.com/abdullahamir2308/portfolio',
         liveUrl: 'http://localhost:8080'
-    }
+    },
+
+    pulseprep: {
+        id: 'pulseprep',
+        title: 'PulsePrep – Smart Medical Learning System',
+        tagline: 'An intelligent MCQ-based platform with analytics and performance tracking',
+        status: 'Live Production',
+        timeline: '3 months',
+        technologies: ['Python', 'Django', 'JavaScript', 'PostgreSQL', 'Python Libraries'],
+        
+        overview: 'PulsePrep** is a smart MBBS/BDS preparation platform for Medical students, offering topic-wise question banks, timed tests, and performance analytics through a modern web app.',
+        
+        features: [
+            'Comprehensive MCQ Bank',
+            'Advanced Progress Analytics',
+            'Adaptive Mock Tests',
+            'Smart Notes System',
+            'Smart Notification System',
+            'Vouchers & Coupons Dashboard',
+            'AI-Driven Support (Coming)',
+        ],
+        
+        challenges: [
+            'Scattered and unreliable study resources',
+            'No clear performance insights',
+            'Lack of real exam practice',
+            'Low motivation during preparation',
+        ],
+        
+        solutions: [
+            'Centralized verified MCQ bank',
+            'Smart performance analytics system',
+            'Real-time timed mock tests',
+            'Rewards, vouchers, coupon system',
+        ],
+        
+        metrics: {
+            'Users Served': '500+',
+            'Course Completion Rate': '85%',
+            'Platform Uptime': '99.8%',
+            'Page Load Time': '<2s'
+        },
+        
+        // Add these URLs if available
+        liveUrl: 'https://pulseprep.net',
+        // githubUrl: '' // Optional if code is private
+        
+        // Add your specific role/contributions
+        role: 'Project Lead',
+        contributions: [
+            'Led project planning and technical execution',
+            'Coordinated cross-functional team and timelines',
+            'Oversaw feature integration and quality assurance'
+        ]
+    },
+    
+    // ... keep other projects if any ...
+    
 };
+
+
 
 class CaseStudies {
     constructor() {
@@ -123,7 +182,10 @@ class CaseStudies {
                 <div class="col-md-6 mb-4">
                     <div class="card h-100 case-study-card" data-project-id="${project.id}">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">${project.title}</h6>
+                            <div>
+                                <h6 class="mb-0">${project.title}</h6>
+                                ${project.role ? `<small class="opacity-75">${project.role}</small>` : ''}
+                            </div>
                             <span class="badge bg-success">${project.status}</span>
                         </div>
                         <div class="card-body">
@@ -227,6 +289,17 @@ class CaseStudies {
                                     <ul>
                                         ${project.features.map(feature => `<li>${feature}</li>`).join('')}
                                     </ul>
+                                    
+                                    ${project.contributions ? `
+                                    <h6 class="mt-4">My Contributions</h6>
+                                    <ul class="list-group list-group-flush">
+                                        ${project.contributions.map(contribution => `
+                                            <li class="list-group-item">
+                                                <i class="fas fa-check-circle text-success me-2"></i>${contribution}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                    ` : ''}
                                     
                                     ${project.challenges ? `
                                     <h6 class="mt-4">Challenges & Solutions</h6>

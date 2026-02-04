@@ -39,6 +39,8 @@ import numpy as np
 from n8n_integration import router as n8n_router
 from email_service import email_service
 from github_service import github_service
+from job_service import job_service
+
 
 
 
@@ -608,3 +610,56 @@ async def track_analytics(event: dict):
         f.write(json.dumps(log_entry) + "\n")
     
     return {"status": "logged", "event_id": datetime.now().timestamp()}
+
+
+# Job service endpoints
+@app.get("/jobs")
+async def get_job_applications():
+    """Get all job applications"""
+    return {
+        "jobs": job_service.jobs,
+        "stats": job_service.get_job_stats()
+    }
+
+@app.post("/jobs/add")
+async def add_job_application(job_data: dict):
+    """Add a new job application"""
+    result = job_service.add_job_application(job_data)
+    return result
+
+@app.post("/jobs/{job_id}/status")
+async def update_job_status(job_id: str, update_data: dict):
+    """Update job application status"""
+    status = update_data.get("status", "")
+    notes = update_data.get("notes", "")
+    result = job_service.update_application_status(job_id, status, notes)
+    return result
+
+@app.get("/jobs/{job_id}/tailor-resume")
+async def tailor_resume(job_id: str):
+    """Get resume tailoring suggestions for a job"""
+    result = job_service.tailor_resume_for_job(job_id)
+    return result
+
+@app.post("/jobs/{job_id}/cover-letter")
+async def generate_cover_letter(job_id: str):
+    """Generate cover letter for a job"""
+    result = job_service.generate_cover_letter(job_id)
+    return result
+
+@app.get("/jobs/stats")
+async def get_job_statistics():
+    """Get job application statistics"""
+    return job_service.get_job_stats()
+
+@app.get("/resume")
+async def get_resume_data():
+    """Get resume information"""
+    return job_service.resume_data
+
+@app.post("/resume/update")
+async def update_resume_data(resume_updates: dict):
+    """Update resume information"""
+    job_service.resume_data.update(resume_updates)
+    job_service.save_data()
+    return {"success": True, "resume": job_service.resume_data}

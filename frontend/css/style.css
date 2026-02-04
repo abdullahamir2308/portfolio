@@ -785,3 +785,56 @@ code {
     font-family: 'Courier New', monospace;
     color: #d63384;
 }
+
+/* JOB DASHBOARD - Phase 1 */
+.bg-gradient-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+}
+
+.job-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #dc3545;
+}
+
+.job-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.1);
+}
+
+.job-card[data-status="interviewed"] {
+    border-left-color: #ffc107;
+}
+
+.job-card[data-status="offer"] {
+    border-left-color: #28a745;
+}
+
+.job-card[data-status="rejected"] {
+    border-left-color: #6c757d;
+    opacity: 0.8;
+}
+
+/* Status badges */
+.status-badge {
+    font-size: 0.7rem;
+    padding: 0.25em 0.6em;
+}
+
+/* Match score colors */
+.bg-match-high {
+    background-color: #28a745 !important;
+}
+
+.bg-match-medium {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.bg-match-low {
+    background-color: #dc3545 !important;
+}
+
+/* Modal styling for cover letters */
+.modal-xl {
+    max-width: 90%;
+}
