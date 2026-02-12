@@ -344,5 +344,73 @@ class EmailService:
         with open(log_file, 'w') as f:
             json.dump(logs, f, indent=2)
 
+    def send_followup_email(self, job_data: Dict, followup_type: str = "first") -> Dict:
+        """Send follow-up email for a job application"""
+        
+        subject = f"Following up on {job_data.get('position', '')} position at {job_data.get('company', '')}"
+        
+        templates = {
+            "first": f"""
+            <h2>Follow-up on Job Application</h2>
+            <p>Dear Hiring Team at {job_data.get('company')},</p>
+            <p>I hope this email finds you well. I recently applied for the <strong>{job_data.get('position')}</strong> position on {job_data.get('applied_date', '')[:10]} and wanted to reiterate my enthusiasm for the role.</p>
+            <p>I remain very interested in joining your team and contributing to your projects. If there are any updates regarding my application, I would greatly appreciate hearing from you.</p>
+            <p>Thank you for your time and consideration.</p>
+            <p>Best regards,<br>{self.resume_data.get('name', '')}<br>{self.resume_data.get('email', '')}</p>
+            """,
+            "second": f"""
+            <h2>Second Follow-up</h2>
+            <p>Dear Hiring Team at {job_data.get('company')},</p>
+            <p>I wanted to gently follow up on my application for the <strong>{job_data.get('position')}</strong> position, submitted on {job_data.get('applied_date', '')[:10]}.</p>
+            <p>I am still very interested in this opportunity and would love to know if there are any updates. Please let me know if you need any additional information from my side.</p>
+            <p>Thank you again for considering my application.</p>
+            <p>Best regards,<br>{self.resume_data.get('name', '')}</p>
+            """
+        }
+        
+        html_content = templates.get(followup_type, templates["first"])
+        
+        # Use existing email sending logic
+        result = self._send_email(
+            to_email=self.email_to,  # In production, send to job_data['contact_email']
+            subject=subject,
+            html_content=html_content,
+            text_content=self._create_followup_text(job_data, followup_type)
+        )
+        
+        return result
+    
+    def _create_followup_text(self, job_data: Dict, followup_type: str) -> str:
+        """Create plain text version of follow-up email"""
+        if followup_type == "second":
+            return f"""
+            Second Follow-up
+            
+            Dear Hiring Team at {job_data.get('company')},
+            
+            I wanted to gently follow up on my application for the {job_data.get('position')} position, submitted on {job_data.get('applied_date', '')[:10]}.
+            
+            I am still very interested in this opportunity and would love to know if there are any updates.
+            
+            Thank you for considering my application.
+            Best regards,
+            {self.resume_data.get('name', '')}
+            """
+        
+        return f"""
+        Follow-up on Job Application
+        
+        Dear Hiring Team at {job_data.get('company')},
+        
+        I recently applied for the {job_data.get('position')} position on {job_data.get('applied_date', '')[:10]} and wanted to reiterate my enthusiasm for the role.
+        
+        I remain very interested in joining your team. If there are any updates regarding my application, I would greatly appreciate hearing from you.
+        
+        Thank you for your time and consideration.
+        Best regards,
+        {self.resume_data.get('name', '')}
+        {self.resume_data.get('email', '')}
+        """
+
 # Singleton instance
 email_service = EmailService()

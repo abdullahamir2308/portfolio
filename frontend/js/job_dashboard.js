@@ -152,6 +152,14 @@ class JobDashboard {
                                             <button class="btn btn-sm btn-outline-secondary" onclick="jobDashboard.filterJobs('offer')">Offer</button>
                                         </div>
                                     </div>
+                                    <div class="d-flex justify-content-end mb-3">
+                                        <button class="btn btn-sm btn-outline-success me-2" onclick="jobDashboard.exportCSV()">
+                                            <i class="fas fa-file-csv me-1"></i>Export CSV
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="jobDashboard.exportJSON()">
+                                            <i class="fas fa-download me-1"></i>Export JSON
+                                        </button>
+                                    </div>
                                     <div id="jobList" class="border rounded p-3 bg-light" 
                                          style="max-height: 400px; overflow-y: auto;">
                                         <div class="text-center text-muted py-3">
@@ -352,6 +360,9 @@ class JobDashboard {
                                 </button>
                                 <button class="btn btn-outline-info" onclick="jobDashboard.generateCoverLetter('${job.id}')">
                                     <i class="fas fa-file-alt"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="jobDashboard.sendFollowup('${job.id}')">
+                                    <i class="fas fa-envelope"></i>
                                 </button>
                             </div>
                         </div>
@@ -612,6 +623,27 @@ class JobDashboard {
         } catch (error) {
             console.error('Failed to generate cover letter:', error);
             this.showError('Failed to generate cover letter');
+        }
+    }
+    
+    async sendFollowup(jobId) {
+        const type = confirm('Send first follow-up? Click OK for first, Cancel for second.') ? 'first' : 'second';
+        
+        try {
+            const response = await fetch(`${this.backendUrl}/jobs/${jobId}/followup-email?followup_type=${type}`, {
+                method: 'POST'
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSuccess('Follow-up email sent!');
+                await this.loadJobs(); // refresh status
+            } else {
+                this.showError(result.error || 'Failed to send follow-up');
+            }
+        } catch (error) {
+            console.error('Failed to send follow-up:', error);
+            this.showError('Failed to send follow-up');
         }
     }
     
@@ -963,6 +995,34 @@ class JobDashboard {
         const modal = bootstrap.Modal.getInstance(document.getElementById('tailoringModal'));
         modal.hide();
     }
+
+    async exportCSV() {
+    try {
+        window.location.href = `${this.backendUrl}/jobs/export/csv`;
+        this.showSuccess('CSV download started');
+    } catch (error) {
+        this.showError('Export failed');
+    }
+}
+
+async exportJSON() {
+    try {
+        const response = await fetch(`${this.backendUrl}/jobs/export/json`);
+        const data = await response.json();
+        
+        // Create download link
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `job_applications_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+        
+        this.showSuccess('JSON export complete');
+    } catch (error) {
+        this.showError('JSON export failed');
+    }
+}
 }
 
 // Initialize when page loads

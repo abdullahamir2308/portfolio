@@ -678,3 +678,21 @@ async def mark_followup_sent(job_id: str):
     """Mark follow-up as sent"""
     result = job_service.update_application_status(job_id, "followed_up", "Follow-up sent")
     return result
+
+
+@app.post("/jobs/{job_id}/followup-email")
+async def send_followup_email(job_id: str, followup_type: str = "first"):
+    """Send follow-up email for a job"""
+    job = next((j for j in job_service.jobs if j["id"] == job_id), None)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Send email
+    result = email_service.send_followup_email(job, followup_type)
+    
+    # Update job status
+    job["status"] = "followed_up"
+    job["last_followup"] = datetime.now().isoformat()
+    job_service.save_data()
+    
+    return {"success": True, "email_result": result}
