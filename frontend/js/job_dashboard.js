@@ -63,6 +63,40 @@ class JobDashboard {
                                     </div>
                                 </div>
                                 
+                                <!-- Recommended Jobs -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommended Jobs</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="recommendedJobsContainer" style="max-height: 300px; overflow-y: auto;">
+                                            <div class="text-center py-3">
+                                                <div class="spinner-border spinner-border-sm" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="text-muted mt-2 mb-0">Finding recommended jobs...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Analytics Dashboard -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Job Search Analytics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="analyticsContainer">
+                                            <div class="text-center py-3">
+                                                <div class="spinner-border" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                                <p class="text-muted mt-2">Loading analytics...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <!-- Add New Job Form -->
                                 <div class="card mb-4">
                                     <div class="card-header">
@@ -141,9 +175,16 @@ class JobDashboard {
             await this.loadJobs();
             await this.loadResumeData();
             await this.updateStats();
+            await this.loadRecommendedJobs();
+            await this.loadAnalytics();
+            await this.checkFollowups();
             
             // Set up lazy loading for this dashboard
             this.setupLazyLoading();
+            
+            // Set up periodic checks
+            setInterval(() => this.checkFollowups(), 3600000); // Every hour
+            setInterval(() => this.loadAnalytics(), 1800000); // Every 30 minutes
         }
     }
     
@@ -185,6 +226,52 @@ class JobDashboard {
             this.resumeData = await response.json();
         } catch (error) {
             console.error('Failed to load resume data:', error);
+        }
+    }
+    
+    async loadRecommendedJobs() {
+        try {
+            const response = await fetch(`${this.backendUrl}/jobs/recommended`);
+            const data = await response.json();
+            
+            this.recommendedJobs = data.recommended_jobs || [];
+            this.renderRecommendedJobs();
+            
+        } catch (error) {
+            console.error('Failed to load recommended jobs:', error);
+        }
+    }
+    
+    async loadAnalytics() {
+        try {
+            const [dailyResp, weeklyResp] = await Promise.all([
+                fetch(`${this.backendUrl}/jobs/analytics/daily`),
+                fetch(`${this.backendUrl}/jobs/analytics/weekly`)
+            ]);
+            
+            this.dailyAnalytics = await dailyResp.json();
+            this.weeklyAnalytics = await weeklyResp.json();
+            
+            this.renderAnalytics();
+            
+        } catch (error) {
+            console.error('Failed to load analytics:', error);
+        }
+    }
+    
+    async checkFollowups() {
+        try {
+            const response = await fetch(`${this.backendUrl}/jobs/followups`);
+            const data = await response.json();
+            
+            this.followups = data.followups_needed || [];
+            
+            if (this.followups.length > 0) {
+                this.showFollowupReminder();
+            }
+            
+        } catch (error) {
+            console.error('Failed to check followups:', error);
         }
     }
     
@@ -357,6 +444,154 @@ class JobDashboard {
             console.error('Failed to tailor resume:', error);
             this.showError('Failed to generate tailoring suggestions');
         }
+    }
+    
+    renderRecommendedJobs() {
+        const container = document.getElementById('recommendedJobsContainer');
+        if (!container || !this.recommendedJobs.length) return;
+        
+        container.innerHTML = this.recommendedJobs.map(job => `
+            <div class="card mb-2">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">${job.title}</h6>
+                            <p class="mb-1 small">
+                                <i class="fas fa-building me-1"></i>${job.company}
+                                <span class="badge bg-secondary ms-2">${job.source}</span>
+                            </p>
+                            <p class="text-muted small mb-0">
+                                <i class="fas fa-map-marker-alt me-1"></i>${job.location}
+                                ${job.remote ? '<span class="badge bg-success ms-2">Remote</span>' : ''}
+                            </p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="jobDashboard.importJob('${job.source}', ${JSON.stringify(job).replace(/'/g, "\\'")})">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    renderAnalytics() {
+        const container = document.getElementById('analyticsContainer');
+        if (!container || !this.dailyAnalytics) return;
+        
+        container.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">📊 Daily Summary</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <div class="display-4 text-primary">
+                                    ${this.dailyAnalytics.applications_today || 0}
+                                </div>
+                                <p class="text-muted">Applications Today</p>
+                            </div>
+                            
+                            <p><strong>Success Rate:</strong> ${this.dailyAnalytics.success_rate || 0}%</p>
+                            <p><strong>Avg Match Score:</strong> ${this.dailyAnalytics.average_match_score || 0}%</p>
+                            
+                            ${this.dailyAnalytics.recommended_actions ? `
+                            <h6 class="mt-3">💡 Recommendations</h6>
+                            <ul class="small">
+                                ${this.dailyAnalytics.recommended_actions.slice(0, 3).map(action => 
+                                    `<li>${action}</li>`
+                                ).join('')}
+                            </ul>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h6 class="mb-0">📈 Weekly Trends</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>This Week:</strong> ${this.weeklyAnalytics.applications_this_week || 0} applications</p>
+                            <p><strong>Interviews:</strong> ${this.weeklyAnalytics.interviews_this_week || 0}</p>
+                            <p><strong>Offers:</strong> ${this.weeklyAnalytics.offers_this_week || 0}</p>
+                            
+                            ${this.weeklyAnalytics.week_over_week_change ? `
+                            <p><strong>Week-over-week:</strong> 
+                                <span class="${this.weeklyAnalytics.week_over_week_change > 0 ? 'text-success' : 'text-danger'}">
+                                    ${this.weeklyAnalytics.week_over_week_change > 0 ? '+' : ''}${this.weeklyAnalytics.week_over_week_change}%
+                                </span>
+                            </p>
+                            ` : ''}
+                            
+                            ${this.weeklyAnalytics.insights ? `
+                            <h6 class="mt-3">✨ Insights</h6>
+                            <ul class="small">
+                                ${this.weeklyAnalytics.insights.slice(0, 2).map(insight => 
+                                    `<li>${insight}</li>`
+                                ).join('')}
+                            </ul>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    async importJob(source, jobData) {
+        try {
+            const response = await fetch(`${this.backendUrl}/jobs/import/${source}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(jobData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showSuccess(`Job imported from ${source}!`);
+                await this.loadJobs();
+            }
+            
+        } catch (error) {
+            console.error('Failed to import job:', error);
+            this.showError('Failed to import job');
+        }
+    }
+    
+    showFollowupReminder() {
+        const reminderHtml = `
+            <div class="toast align-items-center text-bg-warning border-0" id="followupToast">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-bell me-2"></i>
+                        <strong>Follow-up Reminder:</strong> ${this.followups.length} applications need follow-up
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        // Add to toast container
+        let container = document.getElementById('errorToastContainer');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'errorToastContainer';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        container.insertAdjacentHTML('afterbegin', reminderHtml);
+        
+        // Show toast
+        const toast = new bootstrap.Toast(document.getElementById('followupToast'), {
+            delay: 10000
+        });
+        toast.show();
     }
     
     async generateCoverLetter(jobId) {

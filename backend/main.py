@@ -40,18 +40,10 @@ from n8n_integration import router as n8n_router
 from email_service import email_service
 from github_service import github_service
 from job_service import job_service
+from job_search_service import job_search_service
+from job_analytics_service import JobAnalyticsService
 
-
-
-
-
-"""
-CHANGES: Add embedding-based memory recall
-- Store conversation snippets with embeddings
-- Semantic search for relevant memories
-- Two memory systems: recent + semantic
-"""
-
+job_analytics_service = JobAnalyticsService(job_service)
 
 
 # Add after existing imports
@@ -417,55 +409,6 @@ def health_check():
     }        
 
 
-# # email dashboard endpoints
-# @app.post("/email/summary")
-# async def send_summary_email(email_request: dict = None):
-#     """Send portfolio summary email"""
-    
-#     # Get mock data (in production, fetch from database)
-#     summary_data = {
-#         "chat_count": len(ConversationMemory.memory.get("default", [])),
-#         "agent_tasks": len(agent.memory),
-#         "memory_entries": len(embedding_memory.memories.get("texts", [])),
-#         "ai_summary": "Your AI portfolio is actively learning and improving. Recent interactions show growing engagement with AI agent features.",
-#         "recent_activities": [
-#             "AI Agent executed code analysis task",
-#             "n8n workflow triggered daily summary",
-#             "Semantic memory expanded with new embeddings"
-#         ]
-#     }
-    
-#     # Merge with request data if provided
-#     if email_request:
-#         summary_data.update(email_request)
-    
-#     result = email_service.send_portfolio_summary(summary_data)
-#     return result
-
-# @app.post("/email/agent-report")
-# async def send_agent_report(agent_results: dict):
-#     """Send AI agent execution report"""
-#     result = email_service.send_daily_report(agent_results)
-#     return result
-
-# @app.get("/email/logs")
-# async def get_email_logs(days: int = 7):
-#     """Get recent email logs"""
-#     logs = []
-#     for i in range(days):
-#         date_str = (datetime.now() - timedelta(days=i)).strftime('%Y%m%d')
-#         log_file = f"logs/email_log_{date_str}.json"
-        
-#         if os.path.exists(log_file):
-#             with open(log_file, 'r') as f:
-#                 day_logs = json.load(f)
-#                 logs.extend(day_logs)
-    
-#     return {
-#         "total_emails": len(logs),
-#         "emails": logs[-20:]  # Last 20 emails
-#     }
-
 # Add to imports
 from email_service import email_service
 
@@ -663,3 +606,75 @@ async def update_resume_data(resume_updates: dict):
     job_service.resume_data.update(resume_updates)
     job_service.save_data()
     return {"success": True, "resume": job_service.resume_data}
+
+
+
+# Job_search_service endpoints
+@app.get("/jobs/search")
+async def search_jobs(
+    query: str = "AI developer", 
+    location: str = "",
+    limit: int = 10
+):
+    """Search jobs across platforms"""
+    results = job_search_service.search_all_platforms(query, location, limit)
+    return results
+
+@app.get("/jobs/recommended")
+async def get_recommended_jobs():
+    """Get recommended jobs based on skills"""
+    # Get skills from resume
+    resume_data = job_service.resume_data
+    skills = resume_data.get("skills", [])
+    
+    recommended = job_search_service.get_recommended_jobs(skills)
+    return {"recommended_jobs": recommended}
+
+@app.post("/jobs/import/{source}")
+async def import_job_from_source(source: str, job_data: dict):
+    """Import a job from external source to applications"""
+    
+    # Map external job to our format
+    imported_job = {
+        "company": job_data.get("company", "Unknown"),
+        "position": job_data.get("title", ""),
+        "job_url": job_data.get("url", ""),
+        "description": job_data.get("description", ""),
+        "source": source,
+        "imported_at": datetime.now().isoformat()
+    }
+    
+    # Add to applications
+    result = job_service.add_job_application(imported_job)
+    
+    return {
+        "success": True,
+        "message": f"Job imported from {source}",
+        "job": result["job"]
+    }
+
+
+# Job analytics service endpoints
+@app.get("/jobs/analytics/daily")
+async def get_daily_analytics():
+    """Get daily job search analytics"""
+    report = job_analytics_service.generate_daily_report()
+    return report
+
+@app.get("/jobs/analytics/weekly")
+async def get_weekly_analytics():
+    """Get weekly job search summary"""
+    summary = job_analytics_service.get_weekly_summary()
+    return summary
+
+@app.get("/jobs/followups")
+async def get_followup_reminders():
+    """Get applications needing follow-up"""
+    followups = job_analytics_service.check_followups_needed()
+    return {"followups_needed": followups}
+
+@app.post("/jobs/{job_id}/followup")
+async def mark_followup_sent(job_id: str):
+    """Mark follow-up as sent"""
+    result = job_service.update_application_status(job_id, "followed_up", "Follow-up sent")
+    return result
