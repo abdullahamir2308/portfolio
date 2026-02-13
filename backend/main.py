@@ -175,7 +175,7 @@ embedding_memory = EmbeddingMemory()
 # CORS middleware for frontend-backend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # Your frontend port
+    allow_origins=["http://localhost:8080", "https://portfolio-eight-pi-mokiepr89i.vercel.app/"],  # Your frontend port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
