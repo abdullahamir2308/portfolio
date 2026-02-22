@@ -5,7 +5,7 @@
 
 class PortfolioAnalytics {
     constructor() {
-        this.endpoint = 'http://localhost:8000/analytics'; // Your backend endpoint
+        this.endpoint = `${CONFIG.API_BASE}/analytics`; // Your backend endpoint
         this.userId = this.getUserId();
         this.initialize();
     }

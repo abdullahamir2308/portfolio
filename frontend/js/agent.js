@@ -304,5 +304,5 @@ class PortfolioAgentUI {
 
 // Initialize agent UI when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    window.agentUI = new PortfolioAgentUI('http://localhost:8000');
+    window.agentUI = new PortfolioAgentUI(CONFIG.API_BASE);
 });
