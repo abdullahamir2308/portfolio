@@ -331,5 +331,5 @@ class AutomationDashboard {
 
 // Initialize automation dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    window.automationDashboard = new AutomationDashboard('http://localhost:8000');
+    window.automationDashboard = new AutomationDashboard( import.meta.env.VITE_API_URL || 'http://localhost:8000');
 });

@@ -536,5 +536,5 @@ class GitHubDashboard {
 
 // Initialize GitHub dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    window.githubDashboard = new GitHubDashboard('http://localhost:8000');
+    window.githubDashboard = new GitHubDashboard( import.meta.env.VITE_API_URL || 'http://localhost:8000');
 });

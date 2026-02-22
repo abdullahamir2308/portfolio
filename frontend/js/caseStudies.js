@@ -43,7 +43,7 @@ const CASE_STUDIES = {
         },
         
         githubUrl: 'https://github.com/abdullahamir2308/portfolio',
-        liveUrl: 'http://localhost:8080'
+        liveUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080'
     },
 
     pulseprep: {

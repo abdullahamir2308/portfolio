@@ -432,5 +432,5 @@ class EmailDashboard {
 
 // Initialize email dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    window.emailDashboard = new EmailDashboard('http://localhost:8000');
+    window.emailDashboard = new EmailDashboard( import.meta.env.VITE_API_URL || 'http://localhost:8000');
 });
