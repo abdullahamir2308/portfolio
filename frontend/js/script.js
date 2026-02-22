@@ -9,7 +9,7 @@ CHANGES: Add smart memory mode toggle
 class PortfolioChat {
     constructor() {
         this.conversationHistory = [];
-    this.backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    this.backendUrl = 'http://localhost:8000';
     this.sessionId = this.getOrCreateSessionId(); // NEW: Session management
     this.initializeEventListeners();
     this.loadPortfolioInfo();

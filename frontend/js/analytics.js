@@ -5,7 +5,7 @@
 
 class PortfolioAnalytics {
     constructor() {
-        this.endpoint = import.meta.env.VITE_API_URL || 'http://localhost:8000/analytics'; // Your backend endpoint
+        this.endpoint = 'http://localhost:8000/analytics'; // Your backend endpoint
         this.userId = this.getUserId();
         this.initialize();
     }

@@ -1027,5 +1027,5 @@ async exportJSON() {
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    window.jobDashboard = new JobDashboard(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+    window.jobDashboard = new JobDashboard('http://localhost:8000');
 });
