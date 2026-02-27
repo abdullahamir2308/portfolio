@@ -17,7 +17,7 @@ const CONFIG = (() => {
     // Production (Vercel domain)
     if (hostname.includes('vercel.app')) {
         return {
-            API_BASE: 'https://ai-portfilio-backend-production.up.railway.app/',
+            API_BASE: 'https://ai-portfolio-backend-production.up.railway.app/',
             ENV: 'production'
         };
     }
@@ -25,7 +25,7 @@ const CONFIG = (() => {
     // Custom domain (production)
     if (hostname === 'yourdomain.com' || hostname === 'www.yourdomain.com') {
         return {
-            API_BASE: 'https://ai-portfilio-backend-production.up.railway.app/',
+            API_BASE: 'https://ai-portfolio-backend-production.up.railway.app/',
             ENV: 'production'
         };
     }
@@ -33,7 +33,7 @@ const CONFIG = (() => {
     // Fallback to production
     console.warn('⚠️ Unknown environment:', hostname, '- Using production API');
     return {
-        API_BASE: 'https://ai-portfilio-backend-production.up.railway.app/',
+        API_BASE: 'https://ai-portfolio-backend-production.up.railway.app/',
         ENV: 'production'
     };
 })();
