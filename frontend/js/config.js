@@ -17,7 +17,7 @@ const CONFIG = (() => {
     // Production (Vercel domain)
     if (hostname.includes('vercel.app')) {
         return {
-            API_BASE: 'https://ai-portfilio-backend-production.up.railway.app',
+            API_BASE: 'https://ai-portfolio-backend-production.up.railway.app',
             ENV: 'production'
         };
     }
