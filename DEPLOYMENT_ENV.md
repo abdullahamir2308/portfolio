@@ -10,9 +10,11 @@
 - `EMAIL_TO` - optional
 - `LINKEDIN_TOKEN` - optional (for job search)
 - `INDEED_PUBLISHER_ID` - optional
+- `RAILWAY_PUBLIC_DOMAIN` - auto-set by Railway, used for CORS
+- `ENVIRONMENT` - set to "production" on Railway
 
 ## Vercel (Frontend)
-- `VITE_API_URL` - Railway backend URL
+- `VITE_API_URL` - Railway backend URL (e.g., https://your-app-name-production.up.railway.app)
 
 ## Azure (Future)
 - Will use App Service / Static Web Apps

@@ -51,7 +51,8 @@ class EmbeddingMemory:
     """Semantic memory using embeddings"""
 
     def __init__(self, storage_file: str = "semantic_memory.json"):
-        self.storage_file = storage_file
+        # Ensure file is in a writable location
+        self.storage_file = os.path.join(os.path.dirname(__file__), storage_file)
         self.client = OpenAI()
         self.memories = self.load_memories()
     
@@ -126,7 +127,8 @@ class ConversationMemory:
     """Simple file-based conversation memory"""
     
     def __init__(self, storage_file: str = "chat_memory.json"):
-        self.storage_file = storage_file
+        # Ensure file is in a writable location
+        self.storage_file = os.path.join(os.path.dirname(__file__), storage_file)
         self.memories: Dict[str, List[Dict]] = self.load_memories()
     
     def load_memories(self) -> Dict:
@@ -173,9 +175,26 @@ memory = ConversationMemory()
 embedding_memory = EmbeddingMemory()
 
 # CORS middleware for frontend-backend communication
+cors_origins = [
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "https://portfolio-one-zeta-51.vercel.app",  # Remove trailing slash
+]
+
+# Add Railway and other production URLs from environment
+railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN")
+if railway_url:
+    cors_origins.append(f"https://{railway_url}")
+
+# In production, be permissive with HTTPS (Railway domains are secure)
+if os.getenv("ENVIRONMENT") == "production":
+    if not railway_url:
+        # Allow any HTTPS domain as fallback for production
+        cors_origins.append("https://*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "https://portfolio-one-zeta-51.vercel.app/"],  # Your frontend port
+    allow_origins=cors_origins if os.getenv("ENVIRONMENT") != "production" else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
