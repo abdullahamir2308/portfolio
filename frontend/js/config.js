@@ -14,18 +14,26 @@ const CONFIG = (() => {
         };
     }
     
-    // Production (Vercel domain)
+    // Vercel production
     if (hostname.includes('vercel.app')) {
         return {
-            API_BASE: 'https://ai-portfilio-backend-production.up.railway.app',
+            API_BASE: 'https://ai-portfolio-backend-production.up.railway.app', // your Railway backend
             ENV: 'production'
         };
     }
     
-    // Custom domain (production)
+    // Azure Static Web Apps
+    if (hostname.includes('azurestaticapps.net')) {
+        return {
+            API_BASE: 'https://your-backend.azurewebsites.net', // replace with your actual Azure backend URL
+            ENV: 'production'
+        };
+    }
+    
+    // Custom domain (if you have one)
     if (hostname === 'yourdomain.com' || hostname === 'www.yourdomain.com') {
         return {
-            API_BASE: 'https://ai-portfilio-backend-production.up.railway.app',
+            API_BASE: 'https://your-backend.azurewebsites.net', // also update here if using Azure
             ENV: 'production'
         };
     }
@@ -33,7 +41,7 @@ const CONFIG = (() => {
     // Fallback to production
     console.warn('⚠️ Unknown environment:', hostname, '- Using production API');
     return {
-        API_BASE: 'https://ai-portfilio-backend-production.up.railway.app',
+        API_BASE: 'https://your-backend.azurewebsites.net', // default to Azure after migration
         ENV: 'production'
     };
 })();

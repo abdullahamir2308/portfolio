@@ -172,10 +172,30 @@ app.include_router(n8n_router)
 memory = ConversationMemory()
 embedding_memory = EmbeddingMemory()
 
+# Dynamic CORS configuration for multiple environments
+def get_allowed_origins():
+    """Get allowed origins based on environment"""
+    origins = [
+        # Development
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:8080",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8000",
+        # Vercel
+        "https://portfolio-eight-pi-mokiepr89i.vercel.app",
+        # Azure Static Web Apps (wildcard pattern)
+        "https://*.azurestaticapps.net",
+        # Custom domain from env
+        os.getenv("FRONTEND_URL"),
+    ]
+    # Filter out None values
+    return [origin for origin in origins if origin]
+
 # CORS middleware for frontend-backend communication
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080", "https://portfolio-eight-pi-mokiepr89i.vercel.app/"],  # Your frontend port
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -196,6 +216,15 @@ class PortfolioInfo(BaseModel):
     skills: List[str]
     projects: List[str]
     interests: List[str]
+
+# Health check endpoint for Azure App Service
+@app.get("/health")
+def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat()
+    }
 
 @app.get("/")
 def home():
