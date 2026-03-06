@@ -14,18 +14,18 @@ const CONFIG = (() => {
         };
     }
     
-    // Vercel production
-    if (hostname.includes('vercel.app')) {
-        return {
-            API_BASE: 'https://ai-portfolio-backend-production.up.railway.app', // your Railway backend
-            ENV: 'production'
-        };
-    }
+    // // Vercel production
+    // if (hostname.includes('vercel.app')) {
+    //     return {
+    //         API_BASE: 'https://ai-portfolio-backend-production.up.railway.app', // your Railway backend
+    //         ENV: 'production'
+    //     };
+    // }
     
     // Azure Static Web Apps
     if (hostname.includes('azurestaticapps.net')) {
         return {
-            API_BASE: 'https://your-backend.azurewebsites.net', // replace with your actual Azure backend URL
+            API_BASE: 'https://ai-portfolio-dve0edghh4aqfue2.southeastasia-01.azurewebsites.net', // replace with your actual Azure backend URL
             ENV: 'production'
         };
     }
@@ -41,7 +41,7 @@ const CONFIG = (() => {
     // Fallback to production
     console.warn('⚠️ Unknown environment:', hostname, '- Using production API');
     return {
-        API_BASE: 'https://your-backend.azurewebsites.net', // default to Azure after migration
+        API_BASE: 'https://ai-portfolio-dve0edghh4aqfue2.southeastasia-01.azurewebsites.net', // default to Azure after migration
         ENV: 'production'
     };
 })();
